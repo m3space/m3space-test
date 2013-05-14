@@ -5,29 +5,90 @@ using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 
 using GHIElectronics.NETMF.FEZ;
+using System.IO.Ports;
+using GHIElectronics.NETMF.IO;
+using Microsoft.SPOT.IO;
+using System.IO;
 
 namespace LinkspriteCameraTest
 {
     public class Program
     {
+        static string imageFilename = "";
+        static FileStream imageFileHandle = null;
+
         public static void Main()
         {
-            // Blink board LED
+            Debug.EnableGCMessages(true);  // set true for garbage collector output
 
-            bool ledState = false;
+            // initialize serial port
+            SerialPort cameraPort = new SerialPort("COM3", 38400, Parity.None, 8, StopBits.One);
 
-            OutputPort led = new OutputPort((Cpu.Pin)FEZ_Pin.Digital.LED, ledState);
+            // initialize SD card
+            while (!PersistentStorage.DetectSDCard())
+            {                
+                Debug.Print("Waiting for SD card");
+                Thread.Sleep(1000);
+            }
+            PersistentStorage sdStorage = new PersistentStorage("SD");
+            sdStorage.MountFileSystem();
+            string sdRootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
+
+            LinkspriteCamera camera = new LinkspriteCamera(cameraPort);
+            camera.ImageChunkReceived += OnImageChunkReceived;
+
+            camera.Initialize();
+            Thread.Sleep(5000);     // wait for camera to initialize
+            camera.FlushInput();
+
+            //camera.SetBaudRate(115200);
+
+            int imgNum = 1;
 
             while (true)
             {
-                // Sleep for 500 milliseconds
-                Thread.Sleep(500);
+                imageFilename = sdRootDirectory + @"\test" + imgNum + ".jpg";
 
-                // toggle LED state
-                ledState = !ledState;
-                led.Write(ledState);
+                if (camera.CaptureImage())
+                {
+                    Debug.Print("Capture successful");
+                    Thread.Sleep(30000);
+                }
+                else
+                {
+                    Debug.Print("Capture failed");
+                    if (imageFileHandle != null)
+                    {
+                        imageFileHandle.Close();
+                        imageFileHandle = null;
+                    }
+                    camera.Reset();
+                    Debug.Print("Camera reset");
+                    Thread.Sleep(5000);
+                }
+
+                imgNum++;
             }
+
         }
 
+        static void OnImageChunkReceived(byte[] chunk, int chunkSize, bool complete)
+        {
+            if (imageFileHandle == null)
+            {
+                imageFileHandle = new FileStream(imageFilename, FileMode.OpenOrCreate);
+                Debug.Print("Created new file " + imageFilename);
+            }
+            imageFileHandle.Position = imageFileHandle.Length;
+            imageFileHandle.Write(chunk, 0, chunkSize);
+            imageFileHandle.Flush();
+            Debug.Print(chunkSize + " bytes written");
+            if (complete && (imageFileHandle != null))
+            {
+                imageFileHandle.Close();
+                imageFileHandle = null;
+                Debug.Print("File closed");
+            }
+        }
     }
 }
