@@ -9,6 +9,7 @@ using System.IO.Ports;
 using GHIElectronics.NETMF.IO;
 using Microsoft.SPOT.IO;
 using System.IO;
+using M3Space.Capsule.Drivers;
 
 namespace LinkspriteCameraTest
 {
@@ -41,7 +42,10 @@ namespace LinkspriteCameraTest
             Thread.Sleep(5000);     // wait for camera to initialize
             camera.FlushInput();
 
-            //camera.SetBaudRate(115200);
+            //if (camera.SetBaudRate(115200))
+            //{
+            //    Debug.Print("Baudrate changed.");
+            //}
 
             int imgNum = 1;
 
@@ -52,7 +56,7 @@ namespace LinkspriteCameraTest
                 if (camera.CaptureImage())
                 {
                     Debug.Print("Capture successful");
-                    Thread.Sleep(30000);
+                    Thread.Sleep(15000);
                 }
                 else
                 {

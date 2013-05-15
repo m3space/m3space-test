@@ -3,11 +3,11 @@ using System.IO.Ports;
 using System.Threading;
 using Microsoft.SPOT;
 
-namespace LinkspriteCameraTest
+namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// New LinkSprite serial camera implementation.
-    /// version 2.01
+    /// version 2.02
     /// </summary>
     public class LinkspriteCamera
     {
@@ -142,6 +142,7 @@ namespace LinkspriteCameraTest
             bool ok = ReceiveResponse(SET_BAUDRATE_OK_RESPONSE);
             if (ok)
             {
+                Thread.Sleep(5000);
                 FlushInput();
                 this.port.Close();
                 this.port.BaudRate = (int)baudrate;
