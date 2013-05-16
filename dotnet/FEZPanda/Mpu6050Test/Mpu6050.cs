@@ -52,16 +52,23 @@ namespace M3Space.Capsule.Drivers
         /// <summary>
         /// Sets up the device.
         /// </summary>
-        public void Initialize()
+        /// <returns>true if successful, false otherwise</returns>
+        public bool Initialize()
         {
             // set clock source to X-gyro reference
-            WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_XGYRO, MPU6050_PWR1_CLKSEL_MASK);
+            if (!WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_XGYRO, MPU6050_PWR1_CLKSEL_MASK))
+                return false;
             // set full-scale gyro range
-            WriteBitsToRegister(MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_2000, MPU6050_GCONFIG_FS_SEL_MASK);
+            if (!WriteBitsToRegister(MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_2000, MPU6050_GCONFIG_FS_SEL_MASK))
+                return false;
             // set full-scale accelerometer range
-            WriteBitsToRegister(MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16, MPU6050_ACONFIG_AFS_SEL_MASK);
+            if (!WriteBitsToRegister(MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16, MPU6050_ACONFIG_AFS_SEL_MASK))
+                return false;
             // disable sleep
-            WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_SLEEP_DISABLE, MPU6050_PWR1_SLEEP_MASK);
+            if (!WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_SLEEP_DISABLE, MPU6050_PWR1_SLEEP_MASK))
+                return false;
+
+            return true;
         }
 
         /// <summary>

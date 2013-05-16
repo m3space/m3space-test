@@ -10,7 +10,7 @@ namespace M3Space.Capsule.Drivers
     public abstract class I2CSlave
     {
         protected const int ClockRate = 100;
-        protected int Timeout = 1000;
+        protected const int Timeout = 1000;
 
         protected I2CDevice i2c;
 

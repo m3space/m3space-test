@@ -15,13 +15,24 @@ namespace Mpu6050Test
         {
             MotionData data = new MotionData();
             Mpu6050 mpu6050 = new Mpu6050();
-            mpu6050.Initialize();
+            if (!mpu6050.Initialize())
+            {
+                Debug.Print("initialization failed");
+                return;
+            }
 
             while (true)
             {
-                mpu6050.GetMotionData(ref data);
-                Debug.Print(data.Ax + ' ' + data.Ay + ' ' + data.Az + "  " + data.Gx + ' ' + data.Gy + ' ' + data.Gz);
-                Thread.Sleep(100);
+                if (mpu6050.GetMotionData(ref data))
+                {
+                    Debug.Print("A " + data.Ax + ' ' + data.Ay + ' ' + data.Az + " G " + data.Gx + ' ' + data.Gy + ' ' + data.Gz);
+                    Thread.Sleep(250);
+                }
+                else
+                {
+                    Debug.Print("motion data failed");
+                    return;
+                }
             }
         }
 
