@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpu6050Test", "Mpu6050Test\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarometerTest", "BarometerTest\BarometerTest.csproj", "{C5750C59-68C3-4FBC-9E05-887D0DDB46E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbeeTest", "XbeeTest\XbeeTest.csproj", "{4E1EC6D8-7880-4100-94B4-A8061689E6F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,12 @@ Global
 		{C5750C59-68C3-4FBC-9E05-887D0DDB46E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5750C59-68C3-4FBC-9E05-887D0DDB46E5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C5750C59-68C3-4FBC-9E05-887D0DDB46E5}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
