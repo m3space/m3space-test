@@ -6,7 +6,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// NMEA GPS Reader.
-    /// version 2.01
+    /// version 2.02
     /// </summary>
     public class GpsReader
     {
@@ -29,14 +29,15 @@ namespace M3Space.Capsule.Drivers
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="port">the serial port</param>
-        public GpsReader(SerialPort port)
+        /// <param name="portName">the serial port name</param>
+        public GpsReader(string portName)
         {
-            this.port = port;
-            this.port.BaudRate = 38400;
-            this.port.DataBits = 8;
-            this.port.Parity = Parity.None;
-            this.port.StopBits = StopBits.One;
+            port = new SerialPort(portName);
+            port.BaudRate = 38400;
+            port.DataBits = 8;
+            port.Parity = Parity.None;
+            port.StopBits = StopBits.One;
+            port.ReadTimeout = 200;
             rcvBuf = new byte[RECEIVE_BUFFER_SIZE];
             lineBuf = new char[NMEA_LINE_SIZE];
             iLine = 0;

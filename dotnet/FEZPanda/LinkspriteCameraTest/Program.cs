@@ -22,9 +22,6 @@ namespace LinkspriteCameraTest
         {
             Debug.EnableGCMessages(true);  // set true for garbage collector output
 
-            // initialize serial port
-            SerialPort cameraPort = new SerialPort("COM3", 38400, Parity.None, 8, StopBits.One);
-
             // initialize SD card
             while (!PersistentStorage.DetectSDCard())
             {                
@@ -35,7 +32,7 @@ namespace LinkspriteCameraTest
             sdStorage.MountFileSystem();
             string sdRootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
 
-            LinkspriteCamera camera = new LinkspriteCamera(cameraPort);
+            LinkspriteCamera camera = new LinkspriteCamera("COM3", 38400);
             camera.ImageChunkReceived += OnImageChunkReceived;
 
             camera.Initialize();

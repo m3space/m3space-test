@@ -16,10 +16,7 @@ namespace GpsReceiverTest
         {
             Debug.EnableGCMessages(true);  // set true for garbage collector output
 
-            // initialize serial port
-            SerialPort gpsPort = new SerialPort("COM4");
-
-            GpsReader gps = new GpsReader(gpsPort);
+            GpsReader gps = new GpsReader("COM4");
             gps.GpsDataReceived += OnGpsDataReceived;
 
             gps.Initialize();

@@ -2,7 +2,7 @@ namespace M3Space.Capsule.Util
 {
     /// <summary>
     /// Number conversion utilities.
-    /// version 1.03
+    /// version 1.04
     /// </summary>
     public static class BitConverter
     {
@@ -169,6 +169,43 @@ namespace M3Space.Capsule.Util
                 {
                     return uint.MaxValue;
                 }
+            }
+
+            return retVal;
+        }
+
+        /// <summary>
+        /// Converts a hex string to a number.
+        /// </summary>
+        /// <param name="hex">an array of ASCII characters with hexadecimal numbers</param>
+        /// <returns>an unsigned integer</returns>
+        public static uint Hex2Dec(byte[] hex, int start, int length)
+        {
+            uint retVal = 0;
+            uint multiplier = 1;
+
+            for (int i = start + length - 1; i >= start; i--)
+            {
+                int n = 0;
+                if ((hex[i] >= 48) && (hex[i] <= 57))
+                {
+                    n = hex[i] - 48;
+                }
+                else if ((hex[i] >= 65) && (hex[i] <= 70))
+                {
+                    n = hex[i] - 55;
+                }
+                else if ((hex[i] >= 97) && (hex[i] <= 102))
+                {
+                    n = hex[i] - 87;
+                }
+                else
+                {
+                    return uint.MaxValue;
+                }
+
+                retVal += (uint)(multiplier * n);
+                multiplier *= 16;
             }
 
             return retVal;

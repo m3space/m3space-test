@@ -11,11 +11,12 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// An XBee 868 Pro driver.
-    /// version 1.01
+    /// Designed for 38400 baud.
+    /// version 1.03
     /// </summary>
     public class Xbee
     {
-        const int RECEIVE_BUFFER_SIZE = 32;
+        const int RECEIVE_BUFFER_SIZE = 16;
         const int ATMODE_GUARD_TIME = 300;
 
         static readonly byte[] ENTER_ATMODE = new byte[] { 0x2B, 0x2B, 0x2B };                      // +++
@@ -29,10 +30,15 @@ namespace M3Space.Capsule.Drivers
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="port">the serial port</param>
-        public Xbee(SerialPort port)
+        /// <param name="portName">the serial port name</param>
+        public Xbee(string portName)
         {
-            this.port = port;
+            port = new SerialPort(portName);
+            port.BaudRate = 38400;
+            port.DataBits = 8;
+            port.Parity = Parity.None;
+            port.StopBits = StopBits.One;
+            port.ReadTimeout = 200;
             rcvBuf = new byte[RECEIVE_BUFFER_SIZE];
         }
 
@@ -103,11 +109,10 @@ namespace M3Space.Capsule.Drivers
                 port.Flush();
                 Thread.Sleep(150);
 
-                int n = port.Read(rcvBuf, 0, port.BytesToRead);
+                int n = port.Read(rcvBuf, 0, RECEIVE_BUFFER_SIZE);
                 if (n > 1)
                 {
-                    string readString = new String(Encoding.UTF8.GetChars(rcvBuf), 0, n).TrimEnd('\r');    // subtract \r
-                    dc = BitConverter.Hex2Dec(readString);
+                    dc = BitConverter.Hex2Dec(rcvBuf, 0, n - 1);   // subtract \r
                 }
 
 #if DEBUG
@@ -142,14 +147,13 @@ namespace M3Space.Capsule.Drivers
             port.Flush();
             Thread.Sleep(ATMODE_GUARD_TIME);
  
-            int n = port.Read(rcvBuf, 0, port.BytesToRead);
+            int n = port.Read(rcvBuf, 0, RECEIVE_BUFFER_SIZE);
             if (n >= 3)
             {
-                string readString = new String(System.Text.Encoding.UTF8.GetChars(rcvBuf), 0, n).TrimEnd('\r');    // subtract \r
 #if DEBUG
-                Debug.Print("Enter ATmode = " + readString);
+                Debug.Print("Enter ATmode = " + ((rcvBuf[0] == 79) && (rcvBuf[1] == 75)));
 #endif
-                return (readString.Equals("OK"));
+                return ((rcvBuf[0] == 79) && (rcvBuf[1] == 75));       // OK
             }
 
             return false;
@@ -166,15 +170,14 @@ namespace M3Space.Capsule.Drivers
             port.Flush();
             Thread.Sleep(150);
 
-            int n = port.Read(rcvBuf, 0, port.BytesToRead);
+            int n = port.Read(rcvBuf, 0, RECEIVE_BUFFER_SIZE);
             if (n >= 3)
             {
-                string readString = new String(Encoding.UTF8.GetChars(rcvBuf), 0, 3).TrimEnd('\r');    // subtract \r
 #if DEBUG
-                Debug.Print("Exit ATmode = " + readString + "\n");
+                Debug.Print("Exit ATmode = " + ((rcvBuf[0] == 79) && (rcvBuf[1] == 75)));
 #endif
                 port.DiscardInBuffer();
-                return (readString.Equals("OK"));
+                return ((rcvBuf[0] == 79) && (rcvBuf[1] == 75));        // OK
             }
 
             return false;

@@ -7,11 +7,12 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// New LinkSprite serial camera implementation.
-    /// version 2.04
+    /// version 2.06
     /// </summary>
     public class LinkspriteCamera
     {
         private const int CHUNK_SIZE = 128;
+        private const int READ_RETRY = 2;
 
         public const byte Size_640x480 = 0x00;
         public const byte Size_320x240 = 0x11;
@@ -57,14 +58,16 @@ namespace M3Space.Capsule.Drivers
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="port">the serial port</param>
-        public LinkspriteCamera(SerialPort port)
+        /// <param name="portName">the serial port name</param>
+        /// <param name="baudrate">the serial port baudrate to start with</param>
+        public LinkspriteCamera(string portName, int baudrate)
         {
-            this.port = port;
-            this.port.DataBits = 8;
-            this.port.Parity = Parity.None;
-            this.port.StopBits = StopBits.One;
-            this.port.ReadTimeout = 250;
+            port = new SerialPort(portName);
+            port.BaudRate = baudrate;
+            port.DataBits = 8;
+            port.Parity = Parity.None;
+            port.StopBits = StopBits.One;
+            port.ReadTimeout = 200;
 
             rcvBuf = new byte[CHUNK_SIZE];
             chunkBuf = new byte[CHUNK_SIZE];
@@ -257,7 +260,7 @@ namespace M3Space.Capsule.Drivers
                                     {
                                         FlushInput();
                                         retry++;
-                                        if (retry > 2)
+                                        if (retry > READ_RETRY)
                                             return false;
                                         Thread.Sleep(100);                                        
                                     }
@@ -312,7 +315,7 @@ namespace M3Space.Capsule.Drivers
         private bool ReadData(int length)
         {
             int bytesRead = 0;
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i <= READ_RETRY; i++)
             {
                 int n = port.Read(rcvBuf, bytesRead, length - bytesRead);
                 if (n > 0)
@@ -323,7 +326,7 @@ namespace M3Space.Capsule.Drivers
                 {
                     return true;
                 }
-                else if (i < 2)
+                else if (i < READ_RETRY)
                 {
                     Thread.Sleep(100);
                 }
@@ -341,7 +344,7 @@ namespace M3Space.Capsule.Drivers
             {
                 n = port.Read(rcvBuf, 0, CHUNK_SIZE);
             }
-            while (n != 0);
+            while (n == CHUNK_SIZE);
         }
 
         /// <summary>

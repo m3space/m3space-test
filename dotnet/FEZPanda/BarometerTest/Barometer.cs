@@ -7,7 +7,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// Sure Electronics Barometer Module with MS5561 Sensor.
-    /// version 1.00
+    /// version 1.03
     /// </summary>
     public class Barometer
     {
@@ -21,27 +21,24 @@ namespace M3Space.Capsule.Drivers
         private static readonly byte PRESSURE_SIZE = 26;    // number of bytes of the pressure packet (including \r\n)
         private static readonly byte TEMPERATURE_SIZE = 31; // number of bytes of the temperature packet (including \r\n)
         private static readonly byte ALTITUDE_SIZE = 21;    // number of bytes of the altitude packet (including \r\n)
-        private static readonly byte READ_WAIT_TIME = 50;  // time in ms to wait between checking port for incoming data
-        private static readonly byte READ_WAIT_CYCLE = 10;   // max cycles waiting for incoming data
 
         private byte[] readBuffer;
-        private const int readBufferSize = 32;
+        private const int ReadBufferSize = 32;
+        private const int ReadRetry = 3;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="port">the serial port</param>
-        public Barometer(SerialPort port)
+        /// <param name="portName">the serial port name</param>
+        public Barometer(string portName)
         {
-            readBuffer = new byte[readBufferSize];
-
-            this.port = port;
-
-            this.port.BaudRate = 9600;
-            this.port.DataBits = 8;
-            this.port.StopBits = StopBits.One;
-            this.port.Parity = Parity.None;
-            this.port.ReadTimeout = 250;
+            port = new SerialPort(portName);
+            port.BaudRate = 9600;
+            port.DataBits = 8;
+            port.StopBits = StopBits.One;
+            port.Parity = Parity.None;
+            port.ReadTimeout = 250;
+            readBuffer = new byte[ReadBufferSize];
         }
 
         /// <summary>
@@ -66,21 +63,10 @@ namespace M3Space.Capsule.Drivers
             port.Write(GETPRESSURE, 0, 1);
             port.Write(COMMAND_END, 0, 2);
             port.Flush();
-            byte i = 0;
-            do
-            {
-                if (i == READ_WAIT_CYCLE)
-                    return ushort.MaxValue;
-                Thread.Sleep(READ_WAIT_TIME);
-                i++;
-            }
-            while (port.BytesToRead < PRESSURE_SIZE);
-            //Debug.Print("Pres: " + i);
-            int n = port.Read(readBuffer, 0, PRESSURE_SIZE);
-            if (n >= PRESSURE_SIZE)
+            if (ReadData(PRESSURE_SIZE))
             {
                 // returns integer part only. float parsing not available.
-                string str = new String(System.Text.Encoding.UTF8.GetChars(readBuffer)).Substring(13, 4);
+                string str = new String(System.Text.Encoding.UTF8.GetChars(readBuffer), 13, 4);
                 try
                 {
                     return ushort.Parse(str);
@@ -108,21 +94,10 @@ namespace M3Space.Capsule.Drivers
             port.Write(GETTEMPERATURE, 0, 3);
             port.Write(COMMAND_END, 0, 2);
             port.Flush();
-            byte i = 0;
-            do
-            {
-                if (i == READ_WAIT_CYCLE)
-                    return short.MinValue;
-                Thread.Sleep(READ_WAIT_TIME);
-                i++;
-            }
-            while (port.BytesToRead < TEMPERATURE_SIZE);
-            //Debug.Print("Temp: " + i);
-            int n = port.Read(readBuffer, 0, TEMPERATURE_SIZE);
-            if (n >= TEMPERATURE_SIZE)
+            if (ReadData(TEMPERATURE_SIZE))
             {
                 // returns integer part only. float parsing not available.
-                string str = new String(System.Text.Encoding.UTF8.GetChars(readBuffer)).Substring(15, 4);
+                string str = new String(System.Text.Encoding.UTF8.GetChars(readBuffer), 15, 4);
                 try
                 {
                     return short.Parse(str);
@@ -150,20 +125,9 @@ namespace M3Space.Capsule.Drivers
             port.Write(GETALTITUDE, 0, 1);
             port.Write(COMMAND_END, 0, 2);
             port.Flush();
-            byte i = 0;
-            do
+            if (ReadData(ALTITUDE_SIZE))
             {
-                if (i == READ_WAIT_CYCLE)
-                    return ushort.MaxValue;
-                Thread.Sleep(READ_WAIT_TIME);
-                i++;
-            }
-            while (port.BytesToRead < ALTITUDE_SIZE);
-            //Debug.Print("Alti: " + i);
-            int n = port.Read(readBuffer, 0, ALTITUDE_SIZE);
-            if (n >= ALTITUDE_SIZE)
-            {
-                string str = new String(System.Text.Encoding.UTF8.GetChars(readBuffer)).Substring(7, 5);
+                string str = new String(System.Text.Encoding.UTF8.GetChars(readBuffer), 7, 5);
                 try
                 {
                     return ushort.Parse(str);
@@ -185,10 +149,35 @@ namespace M3Space.Capsule.Drivers
         /// </summary>
         private void FlushInput()
         {
-            while (port.BytesToRead > 0)
+            int n = 0;
+            do
             {
-                port.Read(readBuffer, 0, readBufferSize);
+                n = port.Read(readBuffer, 0, ReadBufferSize);
             }
+            while (n == ReadBufferSize);
+        }
+
+        /// <summary>
+        /// Reads data bytes into receive buffer.
+        /// </summary>
+        /// <param name="length">the number of bytes to read</param>
+        /// <returns>true if bytes read, false if not enough data</returns>
+        private bool ReadData(int length)
+        {
+            int bytesRead = 0;
+            for (int i = 0; i <= ReadRetry; i++)
+            {
+                int n = port.Read(readBuffer, bytesRead, length - bytesRead);
+                if (n > 0)
+                {
+                    bytesRead += n;
+                }
+                if (bytesRead == length)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

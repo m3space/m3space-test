@@ -17,9 +17,8 @@ namespace BarometerTest
             ushort alt;
             ushort p;
             short t;
-            SerialPort barometerPort = new SerialPort("COM2", 9600, Parity.None, 8, StopBits.One);
 
-            Barometer barometer = new Barometer(barometerPort);
+            Barometer barometer = new Barometer("COM2");
 
             barometer.Initialize();
 

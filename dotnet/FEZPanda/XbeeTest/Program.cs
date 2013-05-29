@@ -27,10 +27,7 @@ namespace XbeeTest
                 testdata[i] = (byte)(64 + i);
             }
 
-            // initialize serial port
-            SerialPort xbeePort = new SerialPort("COM1", 38400, Parity.None, 8, StopBits.One);
-
-            Xbee xbee = new Xbee(xbeePort);
+            Xbee xbee = new Xbee("COM1");
 
             Thread.Sleep(2000);
 
