@@ -7,7 +7,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// New LinkSprite serial camera implementation.
-    /// version 2.08
+    /// version 2.09
     /// </summary>
     public class LinkspriteCamera
     {
@@ -65,11 +65,7 @@ namespace M3Space.Capsule.Drivers
         /// <param name="baudrate">the serial port baudrate to start with</param>
         public LinkspriteCamera(string portName, int baudrate)
         {
-            port = new SerialPort(portName);
-            port.BaudRate = baudrate;
-            port.DataBits = 8;
-            port.Parity = Parity.None;
-            port.StopBits = StopBits.One;
+            port = new SerialPort(portName, baudrate, Parity.None, 8, StopBits.One);
             port.ReadTimeout = 200;
 
             rcvBuf = new byte[CHUNK_SIZE];
@@ -186,10 +182,7 @@ namespace M3Space.Capsule.Drivers
                     SendCommand(SET_SIZE_COMMAND);
                     Thread.Sleep(100);
                     bool ok = ReceiveResponse(SET_SIZE_OK_RESPONSE);
-                    if (ok)
-                    {
-                        FlushInput();
-                    }
+                    FlushInput();
                     return ok;
 
                 default:
@@ -204,6 +197,7 @@ namespace M3Space.Capsule.Drivers
         public bool CaptureImage()
         {
             // send command to capture an image.
+            bool finished = false;
             SendCommand(SNAP_COMMAND);
             Thread.Sleep(100);
             if (ReceiveResponse(SNAP_OK_RESPONSE))
@@ -223,8 +217,7 @@ namespace M3Space.Capsule.Drivers
                         // set chunk size
                         GET_CHUNK_COMMAND[12] = (byte)((CHUNK_SIZE >> 8) & 0xFF);
                         GET_CHUNK_COMMAND[13] = (byte)(CHUNK_SIZE & 0xFF);
-
-                        bool finished = false;
+                        
                         int retry = 0;
                         while (!finished)
                         {
@@ -266,7 +259,7 @@ namespace M3Space.Capsule.Drivers
 #if DEBUG
                                             Debug.Print("JPEG end not found.");
 #endif
-                                            return false;
+                                            break;
                                         }
                                     }
                                     else
@@ -280,20 +273,19 @@ namespace M3Space.Capsule.Drivers
                                 }
                                 else
                                 {
-                                    return false;
+                                    break;
                                 }
                             }
                             else
                             {
-                                return false;
+                                break;
                             }
                         }
-                        return true;
                     }
                 }
             }
-
-            return false;
+            FlushInput();
+            return finished;
         }
 
         /// <summary>
