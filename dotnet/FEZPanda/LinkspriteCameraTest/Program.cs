@@ -52,6 +52,7 @@ namespace LinkspriteCameraTest
 
                 if (camera.CaptureImage())
                 {
+                    camera.Stop();
                     Debug.Print("Capture successful");
                     Thread.Sleep(15000);
                 }

@@ -7,7 +7,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// Sure Electronics Barometer Module with MS5561 Sensor.
-    /// version 1.03
+    /// version 1.04
     /// </summary>
     public class Barometer
     {
@@ -149,12 +149,15 @@ namespace M3Space.Capsule.Drivers
         /// </summary>
         private void FlushInput()
         {
-            int n = 0;
-            do
+            if (port.BytesToRead > 0)
             {
-                n = port.Read(readBuffer, 0, ReadBufferSize);
+                int n = 0;
+                do
+                {
+                    n = port.Read(readBuffer, 0, ReadBufferSize);
+                }
+                while (n == ReadBufferSize);
             }
-            while (n == ReadBufferSize);
         }
 
         /// <summary>

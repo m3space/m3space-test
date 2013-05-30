@@ -7,7 +7,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// New LinkSprite serial camera implementation.
-    /// version 2.06
+    /// version 2.08
     /// </summary>
     public class LinkspriteCamera
     {
@@ -29,6 +29,9 @@ namespace M3Space.Capsule.Drivers
 
         private static readonly byte[] SNAP_COMMAND = new byte[] { 0x56, 0x00, 0x36, 0x01, 0x00 };
         private static readonly byte[] SNAP_OK_RESPONSE = new byte[] { 0x76, 0x00, 0x36, 0x00, 0x00 };
+
+        private static readonly byte[] STOP_COMMAND = new byte[] { 0x56, 0x00, 0x36, 0x01, 0x03 };
+        private static readonly byte[] STOP_OK_RESPONSE = new byte[] { 0x76, 0x00, 0x36, 0x00, 0x00 };
         
         static readonly byte[] IMAGE_SIZE_COMMAND = new byte[] { 0x56, 0x00, 0x34, 0x01, 0x00 };
         static readonly byte[] IMAGE_SIZE_OK_RESPONSE = new byte[] { 0x76, 0x00, 0x34, 0x00, 0x04, 0x00, 0x00 };
@@ -97,10 +100,20 @@ namespace M3Space.Capsule.Drivers
             SendCommand(RESET_COMMAND);
             Thread.Sleep(100);
             bool ok = ReceiveResponse(RESET_OK_RESPONSE);
-            if (ok)
-            {
-                FlushInput();
-            }
+            FlushInput();
+            return ok;
+        }
+
+        /// <summary>
+        /// Stops taking pictures.
+        /// </summary>
+        /// <returns>true if command successful, false otherwise</returns>
+        public bool Stop()
+        {
+            SendCommand(STOP_COMMAND);
+            Thread.Sleep(100);
+            bool ok = ReceiveResponse(STOP_OK_RESPONSE);
+            FlushInput();
             return ok;
         }
 
@@ -339,12 +352,15 @@ namespace M3Space.Capsule.Drivers
         /// </summary>
         public void FlushInput()
         {
-            int n = 0;
-            do
+            if (port.BytesToRead > 0)
             {
-                n = port.Read(rcvBuf, 0, CHUNK_SIZE);
+                int n = 0;
+                do
+                {
+                    n = port.Read(rcvBuf, 0, CHUNK_SIZE);
+                }
+                while (n == CHUNK_SIZE);
             }
-            while (n == CHUNK_SIZE);
         }
 
         /// <summary>
