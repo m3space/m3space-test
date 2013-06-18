@@ -244,7 +244,7 @@ namespace M3Space.Capsule.Drivers
                                         {
                                             chunkSize = FindEnd(chunkBuf);
                                             finished = true;
-#if DEBUG
+#if (DEBUG && VERBOSE)
                                             Debug.Print("JPEG image complete.");
 #endif
                                         }
@@ -256,7 +256,7 @@ namespace M3Space.Capsule.Drivers
                                         }
                                         else
                                         {
-#if DEBUG
+#if (DEBUG && VERBOSE)
                                             Debug.Print("JPEG end not found.");
 #endif
                                             break;

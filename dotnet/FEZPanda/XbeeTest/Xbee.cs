@@ -12,7 +12,7 @@ namespace M3Space.Capsule.Drivers
     /// <summary>
     /// An XBee 868 Pro driver.
     /// Designed for 38400 baud.
-    /// version 1.03
+    /// version 1.04
     /// </summary>
     public class Xbee
     {
@@ -65,6 +65,9 @@ namespace M3Space.Capsule.Drivers
             port.Write(false);   // reset the xBee module 
             Thread.Sleep(1);     // wait (at least 100us)
             port.Active = false; // set port as input
+#if DEBUG
+            Debug.Print("XBee reset.");
+#endif
         }
 
         /// <summary>
@@ -150,7 +153,7 @@ namespace M3Space.Capsule.Drivers
             int n = port.Read(rcvBuf, 0, RECEIVE_BUFFER_SIZE);
             if (n >= 3)
             {
-#if DEBUG
+#if (DEBUG && VERBOSE)
                 Debug.Print("Enter ATmode = " + ((rcvBuf[0] == 79) && (rcvBuf[1] == 75)));
 #endif
                 return ((rcvBuf[0] == 79) && (rcvBuf[1] == 75));       // OK
@@ -173,7 +176,7 @@ namespace M3Space.Capsule.Drivers
             int n = port.Read(rcvBuf, 0, RECEIVE_BUFFER_SIZE);
             if (n >= 3)
             {
-#if DEBUG
+#if (DEBUG && VERBOSE)
                 Debug.Print("Exit ATmode = " + ((rcvBuf[0] == 79) && (rcvBuf[1] == 75)));
 #endif
                 port.DiscardInBuffer();

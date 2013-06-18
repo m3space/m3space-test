@@ -6,7 +6,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// NMEA GPS Reader.
-    /// version 2.02
+    /// version 2.06
     /// </summary>
     public class GpsReader
     {
@@ -18,6 +18,8 @@ namespace M3Space.Capsule.Drivers
         private int iLine;
         private SerialPort port;
         private GpsPoint cachedGpsData;
+        private float lastAlt;
+        private long lastTs;
 
         public delegate void GpsDataHandler(GpsPoint gpsPoint);
 
@@ -42,6 +44,8 @@ namespace M3Space.Capsule.Drivers
             lineBuf = new char[NMEA_LINE_SIZE];
             iLine = 0;
             cachedGpsData = new GpsPoint();
+            lastAlt = 0.0f;
+            lastTs = 0;
         }
 
         /// <summary>
@@ -71,11 +75,7 @@ namespace M3Space.Capsule.Drivers
 
                     case 0x0A:
                         // \n (marks end of line)
-                        string line = new String(lineBuf, 0, iLine);
-#if DEBUG
-                        Debug.Print(line);
-#endif
-                        ParseLine(line);
+                        ParseLine(lineBuf, 0, iLine);
                         iLine = 0;
                         break;
 
@@ -97,9 +97,15 @@ namespace M3Space.Capsule.Drivers
         /// <summary>
         /// Parses a line of text.
         /// </summary>
-        /// <param name="line">the text</param>
-        private void ParseLine(String line)
+        /// <param name="lineBuf">a character buffer</param>
+        /// <param name="start">the start index</param>
+        /// <param name="length">the string length</param>
+        private void ParseLine(char[] lineBuf, int start, int length)
         {
+            string line = new String(lineBuf, 0, length);
+#if (DEBUG && VERBOSE)
+            Debug.Print(line);
+#endif
             if (CheckSentence(line))
             {
                 string[] parts = line.Split(',');
@@ -113,15 +119,18 @@ namespace M3Space.Capsule.Drivers
                         {
                             if ((parts.Length != 15) || parts[6].Equals("0"))
                             {
-#if DEBUG
+#if (DEBUG && VERBOSE)
                                 Debug.Print("Length " + parts.Length + " " + parts[6]);
 #endif
                                 return;
                             }
 
                             cachedGpsData.Satellites = Byte.Parse(parts[7]);            // satellites
-                            cachedGpsData.Altitude = (ushort)Double.Parse(parts[9]);    // altitude
-                            OnGpsData();
+                            lastAlt = cachedGpsData.Altitude;
+                            cachedGpsData.Altitude = (float)Double.Parse(parts[9]);    // altitude
+                            
+                            // no position change but altitude change
+                            //OnGpsData();
                         }
                         catch (Exception e)
                         {
@@ -139,7 +148,7 @@ namespace M3Space.Capsule.Drivers
                         {
                             if ((parts.Length != 13) || !parts[2].Equals("A"))
                             {
-#if DEBUG
+#if (DEBUG && VERBOSE)
                                 Debug.Print("Length " + parts.Length + " " + parts[2]);
 #endif
                                 return;
@@ -156,6 +165,7 @@ namespace M3Space.Capsule.Drivers
                                 int minute = int.Parse(time.Substring(2, 2));
                                 int second = int.Parse(time.Substring(4, 2));
                                 int milliseconds = int.Parse(time.Substring(7, 3));
+                                lastTs = cachedGpsData.UtcTimestamp.Ticks;
                                 cachedGpsData.UtcTimestamp = new DateTime(year, month, day, hour, minute, second, milliseconds);
                             }
 
@@ -186,7 +196,17 @@ namespace M3Space.Capsule.Drivers
                             }
 
                             cachedGpsData.HorizontalSpeed = (float)Double.Parse(parts[7]) * 0.51444f; // knots to m/s
-                            cachedGpsData.Heading = (ushort)double.Parse(parts[8]);
+                            cachedGpsData.Heading = (float)Double.Parse(parts[8]);
+
+                            // 1 second = 10'000'000 ticks
+                            long timediff = cachedGpsData.UtcTimestamp.Ticks - lastTs;
+                            if (timediff > 0)
+                            {
+                                // compute vertical speed
+                                cachedGpsData.VerticalSpeed = 1e7f * (cachedGpsData.Altitude - lastAlt) / timediff;
+                            }
+
+                            // only fire event when position and time changes
                             OnGpsData();
                         }
                         catch (Exception e)
@@ -218,7 +238,7 @@ namespace M3Space.Capsule.Drivers
                 result ^= (byte)strSentence[i];
 
             int cs = Convert.ToInt32(strSentence.Substring(iEnd + 1, 2), 16);
-#if DEBUG
+#if (DEBUG && VERBOSE)
             Debug.Print("Checksum " + result + " " + cs);
 #endif
             return (result == cs);

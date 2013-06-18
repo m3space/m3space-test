@@ -9,8 +9,8 @@ namespace M3Space.Capsule.Drivers
         public float Longitude;         // [°]
         public float HorizontalSpeed;   // [m/s]
         public float VerticalSpeed;     // [m/s]
-        public ushort Heading;          // [°]
-        public ushort Altitude;         // [m]
+        public float Heading;           // [°]
+        public float Altitude;          // [m]
         public byte Satellites;         // [#]
     }
 }

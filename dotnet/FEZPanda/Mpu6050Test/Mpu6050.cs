@@ -2,12 +2,13 @@ using System;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using M3Space.Capsule.Util;
+using System.Threading;
 
 namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// MPU6050 Gyro/Accelerometer implementation.
-    /// version 1.00
+    /// version 1.01
     /// </summary>
     public class Mpu6050 : I2CSlave
     {
@@ -58,15 +59,19 @@ namespace M3Space.Capsule.Drivers
             // set clock source to X-gyro reference
             if (!WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_XGYRO, MPU6050_PWR1_CLKSEL_MASK))
                 return false;
+            Thread.Sleep(5);
             // set full-scale gyro range
             if (!WriteBitsToRegister(MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_2000, MPU6050_GCONFIG_FS_SEL_MASK))
                 return false;
+            Thread.Sleep(5);
             // set full-scale accelerometer range
             if (!WriteBitsToRegister(MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16, MPU6050_ACONFIG_AFS_SEL_MASK))
                 return false;
+            Thread.Sleep(5);
             // disable sleep
             if (!WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_SLEEP_DISABLE, MPU6050_PWR1_SLEEP_MASK))
                 return false;
+            Thread.Sleep(100);
 
             return true;
         }
