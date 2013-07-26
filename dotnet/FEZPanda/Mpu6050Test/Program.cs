@@ -18,11 +18,15 @@ namespace Mpu6050Test
         {
             MotionData data = new MotionData();
             Mpu6050 mpu6050 = new Mpu6050();
+
             if (!mpu6050.Initialize())
             {
                 Debug.Print("initialization failed");
                 return;
             }
+
+            // give the module time to initialize
+            Thread.Sleep(1000);
 
             int cAx = 0;
             int cAy = 0;
@@ -52,7 +56,7 @@ namespace Mpu6050Test
 
             cAx = -cAx / CalibIterations;
             cAy = -cAy / CalibIterations;
-            cAz = -cAz / CalibIterations + 2048;    // compensate for 1g in normal orientation
+            cAz = -cAz / CalibIterations + 2048;    // compensate for 1g in normal orientation (at 16g full-scale)
             cGx = -cGx / CalibIterations;
             cGy = -cGy / CalibIterations;
             cGz = -cGz / CalibIterations;

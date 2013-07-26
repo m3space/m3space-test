@@ -8,7 +8,7 @@ namespace M3Space.Capsule.Drivers
 {
     /// <summary>
     /// MPU6050 Gyro/Accelerometer implementation.
-    /// version 1.01
+    /// version 1.03
     /// </summary>
     public class Mpu6050 : I2CSlave
     {
@@ -20,20 +20,22 @@ namespace M3Space.Capsule.Drivers
         const byte MPU6050_RA_ACCEL_XOUT_H = 0x3B;      // first register of motion data
         const byte MPU6050_RA_PWR_MGMT_1 = 0x6B;
 
-        const byte MPU6050_PWR1_CLKSEL_MASK = 0x07;
+        //const byte MPU6050_PWR1_CLKSEL_MASK = 0x07;
         const byte MPU6050_CLOCK_PLL_XGYRO = 0x01;
+        const byte MPU6050_TEMPSENSOR_DISABLE = 0x08;
+        const byte MPU6050_RESET = 0x80;
 
-        const byte MPU6050_PWR1_SLEEP_MASK = 0x40;
+        //const byte MPU6050_PWR1_SLEEP_MASK = 0x40;
         const byte MPU6050_SLEEP_DISABLE = 0x00;
         const byte MPU6050_SLEEP_ENABLE = 0x40;
 
-        const byte MPU6050_GCONFIG_FS_SEL_MASK = 0x18;
+        //const byte MPU6050_GCONFIG_FS_SEL_MASK = 0x18;
         const byte MPU6050_GYRO_FS_250 = 0x00;
         const byte MPU6050_GYRO_FS_500 = 0x08;
         const byte MPU6050_GYRO_FS_1000 = 0x10;
         const byte MPU6050_GYRO_FS_2000 = 0x18;
 
-        const byte MPU6050_ACONFIG_AFS_SEL_MASK = 0x18;
+        //const byte MPU6050_ACONFIG_AFS_SEL_MASK = 0x18;
         const byte MPU6050_ACCEL_FS_2 = 0x00;
         const byte MPU6050_ACCEL_FS_4 = 0x08;
         const byte MPU6050_ACCEL_FS_8 = 0x10;
@@ -56,22 +58,22 @@ namespace M3Space.Capsule.Drivers
         /// <returns>true if successful, false otherwise</returns>
         public bool Initialize()
         {
-            // set clock source to X-gyro reference
-            if (!WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_XGYRO, MPU6050_PWR1_CLKSEL_MASK))
+            // sleep and reset
+            if (!WriteBytes(new byte[] { MPU6050_RA_PWR_MGMT_1, MPU6050_RESET }))
                 return false;
-            Thread.Sleep(5);
-            // set full-scale gyro range
-            if (!WriteBitsToRegister(MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_2000, MPU6050_GCONFIG_FS_SEL_MASK))
+            Thread.Sleep(25);
+
+            // disable sleep, select clock and disable temp. sensor
+            if (!WriteBytes(new byte[] { MPU6050_RA_PWR_MGMT_1, MPU6050_CLOCK_PLL_XGYRO | MPU6050_TEMPSENSOR_DISABLE }))
                 return false;
-            Thread.Sleep(5);
-            // set full-scale accelerometer range
-            if (!WriteBitsToRegister(MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16, MPU6050_ACONFIG_AFS_SEL_MASK))
+
+            // configure gyro sensitivity
+            if (!WriteBytes(new byte[] { MPU6050_RA_GYRO_CONFIG, MPU6050_GYRO_FS_2000 }))
                 return false;
-            Thread.Sleep(5);
-            // disable sleep
-            if (!WriteBitsToRegister(MPU6050_RA_PWR_MGMT_1, MPU6050_SLEEP_DISABLE, MPU6050_PWR1_SLEEP_MASK))
+
+            // configure accelerometer sensitivity
+            if (!WriteBytes(new byte[] { MPU6050_RA_ACCEL_CONFIG, MPU6050_ACCEL_FS_16 }))
                 return false;
-            Thread.Sleep(100);
 
             return true;
         }
