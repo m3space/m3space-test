@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinkspriteCameraTest", "LinkspriteCameraTest\LinkspriteCameraTest.csproj", "{6CB9DFDC-5B8B-47B5-AB12-7BD6FDEB59C1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GpsReceiverTest", "GpsReceiverTest\GpsReceiverTest.csproj", "{A93607BF-B92B-4633-9FE3-DBDFCF980322}"
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarometerTest", "BarometerTest\BarometerTest.csproj", "{C5750C59-68C3-4FBC-9E05-887D0DDB46E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XbeeTest", "XbeeTest\XbeeTest.csproj", "{4E1EC6D8-7880-4100-94B4-A8061689E6F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterruptTest", "InterruptTest\InterruptTest.csproj", "{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,12 @@ Global
 		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4E1EC6D8-7880-4100-94B4-A8061689E6F6}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E50FE0E9-79C0-48BD-8587-C8C29083ABA7}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
